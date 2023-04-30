@@ -1,9 +1,14 @@
 const players={}
 // add default player
 players['p'] = "testuser";
+const scores = []
 // add intro audio
 var introAudio = new Audio()
 currentPlayer = null
+
+let shoot_key = " ";
+let timeLeft1 = 0;
+
 
 // about related
 function showAbout(){
@@ -35,6 +40,7 @@ function showWelcome(){
     $("#Register").css("display","none")
     $("#settings").css("display","none")
     $(".gameScreen").css("display","none")
+    $(".leaderboard-container").css("display","none")
     closeAbout();
 
 }
@@ -45,6 +51,8 @@ function showRegister(){
     $("#Register").css("display","block")
     $("#settings").css("display","none")
     $(".gameScreen").css("display","none")
+    $(".leaderboard-container").css("display","none")
+
     closeAbout();
 
 }
@@ -55,6 +63,7 @@ function showLogin(){
     $("#Register").css("display","none")
     $("#settings").css("display","none")
     $(".gameScreen").css("display","none")
+    $(".leaderboard-container").css("display","none")
     closeAbout()
 
 }
@@ -65,6 +74,7 @@ function showSettings(){
     $("#Register").css("display","none")
     $("#settings").css("display","block")
     $(".gameScreen").css("display","none")
+    $(".leaderboard-container").css("display","none")
     closeAbout()
     // introAudio.play()
     // introAudio.loop = true
@@ -121,8 +131,12 @@ function signup() {
 
         if (name in players){
             if (players[name].localeCompare(pass)==0){
-                currentPlayer = name;
+                if (currentPlayer !== name){
+                  scores.length = 0
+                  currentPlayer = name;
+                }
                 showSettings();
+
             }
 
             else{
@@ -162,11 +176,48 @@ function signup() {
       $(".Game_Screen").css("display","block")
       $(".menu").css("display","none")
       $(".footer-container").css("display","none")
+      $(".leaderboard-container").css("display","none")
+
       let body = document.getElementById("body")
       body.style.backgroundImage = "none";
+      let Fire = document.getElementById("shoot").value;
+      let time = document.getElementById("time").value;
+      setFireKey(Fire)
+      setTime(time)
 
       closeAbout()
     }
+
+    function showLeaderBoard(){
+      $(".WelcomePage").css("display","none")
+      $("#login").css("display","none")
+      $("#Register").css("display","none")
+      $("#settings").css("display","none")
+      $(".Game_Screen").css("display","none")
+      $(".menu").css("display","block")
+      $(".footer-container").css("display","block")
+      $(".leaderboard-container").css("display","block")
+
+      let body = document.getElementById("body")
+      body.style.backgroundImage = "url('./wallpaper.jpg')";
+      closeAbout()
+    }
+    function setFireKey(FireKey){
+      if (FireKey){
+        if (FireKey === 'Spacebar'){
+          FireKey = " "
+        }
+        shoot_key = FireKey
+      }
+
+    }
+    function setTime(time){
+      if (time){
+        timeLeft1 = parseInt(time)
+      }
+    }
+
+
 
 
 

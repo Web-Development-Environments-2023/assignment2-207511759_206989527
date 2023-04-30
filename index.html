@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-      <title>Chicken Invaiders!</title>
+      <title>Chicken Invaders!</title>
       <link rel="stylesheet" href="style.css">
       <script type="text/javascript" src="./first.js"></script>
       <!-- <script src="./jquery-3.4.1.slim.min.js"></script> -->
@@ -18,24 +18,37 @@
       </div>
       </header>
 
-  <!-- About us (The Modal) -->
-  <div id="MyModal" class="modal">
-    <div class="modalContent">
-      <span class="close" onclick="closeAbout()">&times;</span>
-      <p>
-        <h1>Canon Game</h1>
-        <p>Made By Omar Wattad 207511759, Shady Dhamshy 206989527, Abed Awaisy 316445626<br>
+    <!-- About us (The Modal) -->
+    <div id="MyModal" class="modal">
+      <div class="modalContent">
+        <span class="close" onclick="closeAbout()">&times;</span>
+        <h1>Chicken Invaders</h1>
+        <p>Made By Omar Wattad 207511759, Shady Dhamshy 206989527, Abed Awaisy 316445626</p>
         <h2>Usages</h2>
+        <ul>
+          <li>Each time the enemy hits a wall they move down (closer to our ship).</li>
+          <li>If our ship hits a bad ship, it will die immediately (losing all lives).</li>
+          <li>We have a custom time that the player can set.</li>
+          <li>Each time we hit an enemy, it drops meat (prize) that we need to collect to increase our score (killing chickens will not increase the score).</li>
+          <li>A prize drops every 5 seconds, giving us 10 points when collected.</li>
+        </ul>
         <h2>Difficulties</h2>
-        </p>
-      </p>
+        <ul>
+          <li>Fast enemy movement.</li>
+          <li>Multiple enemies on the screen at once.</li>
+          <li>Small player ship size.</li>
+          <li>Custom time increases difficulty.</li>
+          <li>Bad ships that move faster and are harder to avoid.</li>
+        </ul>
+      </div>
     </div>
-  </div>
+
+
 
 
       <!-- Welcome Page -->
       <div class="WelcomePage" id="WelcomePage">
-          <h1>Welcome to Canon Game!</h1>
+          <h1>Welcome to Chickecn Invaders!</h1>
           <h2>Made by:</h2>
           <ul>
             <li>Omar Wattad: 207511759</li>
@@ -48,13 +61,11 @@
           </div>
           <h2>Website links:</h2>
           <ul>
-            <li><a href="https://www.google.com/" target="_blank">Omar's Website</a></li>
-            <li><a href="https://www.google.com/" target="_blank">Shady's Website</a></li>
+            <li><a href="https://web-development-environments-2023.github.io/207511759/" target="_blank">Omar's Website</a></li>
+            <li><a href="https://web-development-environments-2023.github.io/206989527/" target="_blank">Shady's Website</a></li>
             <li><a href="https://web-development-environments-2023.github.io/316445626/" target="_blank">Abed's Website</a></li>
           </ul>
         </div>
-        
-
     
 
       <!-- Login Page -->
@@ -68,7 +79,7 @@
                   </div>
                   <br>
                   <div class="userBox">
-                      <label>Password</label>
+                      <label for="Loginpass">Password</label>
                       <input id="Loginpass" type="password" name="Loginpass" class="SignInInput" required="">
                   </div>
                   <br><br>
@@ -76,6 +87,7 @@
               </form>
           </div>
       </div>
+
       
 
 
@@ -140,25 +152,9 @@
       <input id="shoot" class="shoot" type="text"  onkeydown="setKey('shoot', event)"/>
       </div>
       <div class="input-group">
-      <label class="label" for="time-input">Time (min 120 seconds):</label>
+      <label class="label" for="time-input">Time (min 120 seconds) seconds:</label>
       <input id="time" class="input" type="text">
       </div>
-      <!-- <div class="input-group">
-      <label class="label" for="up-input">Press key to go up:</label>
-      <input id="up" class="up" type="text" onkeydown="setKey('up', event)"/>
-      </div>
-      <div class="input-group">
-      <label class="label" for="down-input">Press key to go down:</label>
-      <input id="down" class="down" type="text" onkeydown="setKey('down', event)"/>
-      </div>
-      <div class="input-group">
-      <label class="label" for="right-input">Press key to go right:</label>
-      <input id="right" class="right" type="text" onkeydown="setKey('right', event)"/>
-      </div>
-      <div class="input-group">
-      <label class="label" for="left-input">Press key to go left:</label>
-      <input id="left" class="left" type="text" onkeydown="setKey('left', event)"/>
-      </div> -->
       <div class="button-group">
       <button class="button default-button" onclick="defaultSettings()">Default</button>
       <button class="button start-button" onclick="showGame()">Start Game!</button>
@@ -181,16 +177,30 @@
 
         <div class="result">
             <div class="game-over">
+                <h1 id="status"></h1>
                 <h2 class="score-num">0</h2>
                 <p>Points</p>
                 <button class="start-game-btn">Start Game</button>
+                <button class="leaderBoardBtn">Leader Board</button>
             </div>
         </div>
       </div>
 
-      <div class="leaderBoard" style="display:none">
-      
+      <div class="leaderboard-container">
+        <h2>Leaderboard</h2>
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody id="table_body">
+            <!-- Leaderboard rows will be dynamically added here -->
+          </tbody>
+        </table>
       </div>
+      
 
 
       <footer>
@@ -217,7 +227,7 @@
               </div>
           </div>
           <div class="footer-copy">
-            <p>&copy; 2023 MyWebsite. All rights reserved.</p>
+            <p>&copy; 2023 Chicken Invaders. All rights reserved.</p>
           </div>
         </footer>
 

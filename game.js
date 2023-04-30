@@ -1,6 +1,8 @@
 const scoreEl = document.querySelectorAll(".score-num");
 const result = document.querySelector(".result");
 const startGameBtn = document.querySelector(".start-game-btn");
+const timeE1 = document.querySelector(".time-num")
+const leaderBoardBtn = document.querySelector(".leaderBoardBtn");
 
 const canvas = document.querySelector(".canvas");
 
@@ -9,7 +11,10 @@ canvas.height = innerHeight - 40; // padding Size : 40
 
 const context = canvas.getContext("2d");
 const speed = 5;
+
+const speedupTime = 5;
 //
+const table = document.getElementById("table_body")
 //
 class Player{
     constructor() {
@@ -144,8 +149,8 @@ class Invader{
         this.speed = speed;
         this.image = createImage("img/chicken.png");
         // Width :  100px  , Height : 85px  
-        this.width = 100;
-        this.height = 85;
+        this.width = 75;
+        this.height = 50;
         this.type = type
         this.position = position;
     }
@@ -163,13 +168,14 @@ class Invader{
     }
 
     shoot() {
-        invaderProjectiles.push(new InvaderProjectile({
+        invadershot = new InvaderProjectile({
             position: {
                 x: this.position.x + this.width / 2,
                 y: this.position.y + this.height
             },
             velocity: { x: 0, y: Math.random() * 2 + 1 }
-        }));
+        })
+        invaderProjectiles.push(invadershot);
     }
 }
 
@@ -214,12 +220,12 @@ class Grid{
         // const rows = Math.floor(Math.random() * 3) + 2;
         const columns = 5;
         const rows = 4
-        this.width = columns * 100;
+        this.width = columns * 75;
         
         for (let x = 0; x < columns; x++){
             let i = 4
             for (let y = 0; y < rows; y++){
-                this.invaders.push(new Invader({ x: x * 100, y: y * 85},i));
+                this.invaders.push(new Invader({ x: x * 75 , y: y * 50},i));
                 i--;
             }
         }
@@ -233,8 +239,48 @@ class Grid{
 
         if (this.position.x + this.width >= canvas.width || this.position.x <= 0) {
             this.velocity.x = -this.velocity.x;
-            this.velocity.y = 40;
+            this.velocity.y = 5
         }
+    }
+}
+
+class health{
+    constructor({x , y}){
+        this.position.x = x;
+        this.position.y = y;
+
+        this.Image = createImage("img/heart.png");
+        this.width = 50;
+        this.height = 50
+    }
+    draw(){
+        context.beginPath();
+
+        context.drawImage(this.image, this.position.x, this.position.y, this.width, this.height);
+        context.closePath();
+    }
+
+}
+class gift{
+    constructor({position , velocity}) {
+        this.position = position;
+        this.velocity = velocity;
+        this.image = createImage("img/gift.png");
+        // Width :  30      Height :    31
+        this.width = 40;
+        this.height = 40;
+    }
+
+    draw() {
+        context.beginPath();
+        context.drawImage(this.image, this.position.x, this.position.y, this.width, this.height);
+        context.closePath();
+    }
+
+    update() {
+        this.draw();
+        // this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
     }
 }
 
@@ -256,15 +302,32 @@ const player = new Player();
 
 let projectiles = [];
 let grids = [];
+let curGrid;
 let invaderProjectiles = [];
+let gifts = []
 let particles = [];
 let prizes = [];
 let frame;
 let randomInterval;
 let score;
 let lives = 3;
-function initGame() {
+let speedupCounter = 4;
+let interval;
+let canShoot = true;
+let invadershot;
+let giftInterval;
 
+let grid;
+
+function initGame() {
+    grid = new Grid();
+    canShoot = true;
+    timeLeft = timeLeft1;
+    lives = 3
+    giftInterval = setInterval(() => {
+        sendGift();
+    },5000);
+    setTimeout(InvaderSpeedUp,5000)
     player.opacity = 1;
     player.position = {
         x: canvas.width / 2 - player.width / 2,
@@ -284,6 +347,16 @@ function initGame() {
     frame = 0;
     randomInterval = Math.floor(Math.random() * 500) + 2000;
     scoreEl[0].innerHTML = score;
+
+    timeE1.innerHTML = timeLeft;
+    interval = setInterval(()=>{
+        timeLeft--;
+        console.log(timeLeft)
+        timeE1.innerHTML = timeLeft;
+        if (timeLeft == 0){
+            gameOver()
+        }
+    },1000)
 
     for (let i = 0; i < 100; i++){
         particles.push(new Particle({
@@ -330,6 +403,8 @@ function createParticles(object , color , fades) {
 
 function gameOver(arr , index) {
     console.log("You Lose");
+    //
+    const status_title = document.getElementById("status");
     createParticles(player, "white" , true);
     setTimeout(() => {
         arr.splice(index, 1);
@@ -341,6 +416,27 @@ function gameOver(arr , index) {
         scoreEl[1].innerHTML = score;
         result.style.display = "block";
     }, 2000);
+    if (lives == 0){
+        status_title.innerHTML = "You Lost"
+        scores.push(score);
+
+    }
+    else if(score >= 250){
+        status_title.innerHTML = "Champion!"
+        scores.push(score);
+
+    }
+    else if(score >100){
+        status_title.innerHTML = "Winner!"
+        scores.push(score);
+    }
+    else{
+        status_title.innerHTML = "You can do better"
+        scores.push(score);
+    }
+    clearInterval(interval);
+    clearInterval(giftInterval);
+
 }
 
 function animate() {
@@ -350,7 +446,7 @@ function animate() {
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     player.update();
-
+    
     prizes.forEach((prize, index) => {
         
         if (prize.position.y <= player.position.y + player.height
@@ -389,7 +485,28 @@ function animate() {
             particle.update();
         }
     });
-    
+    gifts.forEach((gift1,index) => {
+        if (gift1.position.y + gift1.height >= canvas.height) {
+            setTimeout(() => {
+                gifts.splice(index, 1);
+            } , 0);
+        } else {
+            gift1.update();
+        }
+        if (gift1.position.y >= player.position.y
+            && gift1.position.y <= player.position.y + player.height
+            && gift1.position.x >= player.position.x
+            && gift1.position.x <= player.position.x + player.width){
+                setTimeout(() => {
+                    gifts.splice(index, 1);
+                }, 0);
+                // Score 
+                score += 10;
+                scoreEl[0].innerHTML = score;
+
+                
+            }
+    })
     invaderProjectiles.forEach((invaderProjectile , index) => {
         if (invaderProjectile.position.y + invaderProjectile.height >= canvas.height) {
             setTimeout(() => {
@@ -398,6 +515,8 @@ function animate() {
         } else {
             invaderProjectile.update();
         }
+
+        
         /// Game Over
         if (invaderProjectile.position.y >= player.position.y
             && invaderProjectile.position.y <= player.position.y + player.height
@@ -415,77 +534,86 @@ function animate() {
         }
     });
 
-    grids.forEach((grid,gridIndex) => {
-        grid.update();
 
-        // Spawn Projectiles
-        if (frame % 100 === 0 && grid.invaders.length > 0) {
-            const randomNum = Math.floor(Math.random() * grid.invaders.length);
-            grid.invaders[randomNum].shoot();
+    grid.update();
+        //
+    curGrid = grid;
+
+    // Spawn Projectiles
+    if (frame % 100 === 0 && grid.invaders.length > 0 && canShoot) {
+        const randomNum = Math.floor(Math.random() * grid.invaders.length);
+        grid.invaders[randomNum].shoot();
+        canShoot = false;
+    }
+    else if (!canShoot && invadershot.position.y >= canvas.height * 0.75)
+        canShoot = true;
+
+    grid.invaders.forEach((invader, invaderIdx) => {
+        // Invader Touch Player
+        // make lives - 1
+        if (invader.position.y <= player.position.y + player.height
+            && invader.position.y + invader.height >= player.position.y
+            && invader.position.x + invader.width >= player.position.x
+            && invader.position.x <= player.position.x + player.width) {
+            const invaderFound = grid.invaders.find(
+                (invader2) => invader2 === invader);
+            if (invaderFound) {
+                gameOver(grid.invaders, invaderIdx);
+            }
         }
-        grid.invaders.forEach((invader, invaderIdx) => {
-            // Invader Touch Player
-            // make lives - 1
-            if (invader.position.y <= player.position.y + player.height
-                && invader.position.y + invader.height >= player.position.y
-                && invader.position.x + invader.width >= player.position.x
-                && invader.position.x <= player.position.x + player.width) {
-                const invaderFound = grid.invaders.find(
-                    (invader2) => invader2 === invader);
-                if (invaderFound) {
-                    gameOver(grid.invaders, invaderIdx);
-                }
-            }
 
-            if (invader.position.y >= canvas.height) {
-                setTimeout(() => {
-                    grid.invaders.splice(invaderIdx, 1);
-                }, 0);
-            } else {
-                invader.update(grid.velocity);
-                projectiles.forEach((projectile, projectileIdx) => {
-                    // Kill Invader (Chicken)
-                    if (invader.position.y <= projectile.position.y - projectile.radius
-                        && invader.position.y + invader.height >= projectile.position.y + projectile.radius
-                        && invader.position.x <= projectile.position.x - projectile.radius
-                        && invader.position.x + invader.width >= projectile.position.x + projectile.radius) {
-                        const invaderFound = grid.invaders.find(
-                            (invader2) => invader2 === invader );
-                        const projectileFound = projectiles.find(
-                            (projectile2) => projectile2 === projectile);
-                        // Remove invader and projectile
-                        if (invaderFound && projectileFound) {
+        if (invader.position.y >= canvas.height) {
+            setTimeout(() => {
+                grid.invaders.splice(invaderIdx, 1);
+            }, 0);
+        } else {
+            invader.update(grid.velocity);
+            projectiles.forEach((projectile, projectileIdx) => {
+                // Kill Invader (Chicken)
+                if (invader.position.y <= projectile.position.y - projectile.radius
+                    && invader.position.y + invader.height >= projectile.position.y + projectile.radius
+                    && invader.position.x <= projectile.position.x - projectile.radius
+                    && invader.position.x + invader.width >= projectile.position.x + projectile.radius) {
+                    const invaderFound = grid.invaders.find(
+                        (invader2) => invader2 === invader );
+                    const projectileFound = projectiles.find(
+                        (projectile2) => projectile2 === projectile);
+                    // Remove invader and projectile
+                    if (invaderFound && projectileFound) {
 
-                            createParticles(invader, "#BAA0DE", true);
-                            
-                            prizes.push(new Prize({
-                                position: {
-                                    x: invader.position.x + invader.width / 2,
-                                    y: invader.position.y + invader.height
-                                },
-                                velocity: { x: Math.random(), y: Math.random() * 2 + 2 },
-                            },invader.type  ))
+                        createParticles(invader, "#BAA0DE", true);
+                        
+                        prizes.push(new Prize({
+                            position: {
+                                x: invader.position.x + invader.width / 2,
+                                y: invader.position.y + invader.height
+                            },
+                            velocity: { x: Math.random(), y: Math.random() * 2 + 2 },
+                        },invader.type  ))
 
-                            grid.invaders.splice(invaderIdx, 1);
-                            projectiles.splice(projectileIdx, 1);
-                            if (grid.invaders.length > 0) {
-                                const firstInvader = grid.invaders[0];
-                                const lastInvader = grid.invaders[grid.invaders.length - 1];
-                                grid.width = lastInvader.position.x -
-                                    firstInvader.position.x + lastInvader.width;
-                                grid.position.x = firstInvader.position.x;
-                            } else {
-                                setTimeout(() => {
-                                    grids.splice(gridIndex, 1);
-                                }, 0);
-                            }
-
+                        grid.invaders.splice(invaderIdx, 1);
+                        projectiles.splice(projectileIdx, 1);
+                        if (grid.invaders.length > 0) {
+                            const firstInvader = grid.invaders[0];
+                            const lastInvader = grid.invaders[grid.invaders.length - 1];
+                            grid.width = lastInvader.position.x -
+                                firstInvader.position.x + lastInvader.width;
+                            grid.position.x = firstInvader.position.x;
+                        } 
+                        else{
+                            gameOver()
                         }
-                    } 
+                        // else {
+                        //     setTimeout(() => {
+                        //         grids.splice(gridIndex, 1);
+                        //     }, 0);
+                        // }
 
-                });
-            }
-        });
+                    }
+                } 
+
+            });
+        }
     });
     
 
@@ -518,10 +646,6 @@ function animate() {
         player.velocity.y = 0;
     }
 
-    if (frame % randomInterval == 0 || grids.length === 0) {
-        grids.push(new Grid());
-        randomInterval = Math.floor(Math.random() * 500) + 2000;
-    }
     frame++;
 }
 
@@ -529,11 +653,12 @@ startGameBtn.addEventListener("click", () => {
     result.style.display = "none";
     initGame();
 });
-const fire = document.querySelector("shoot").value
+leaderBoardBtn.addEventListener("click", () => {
+    createTable();
+});
 addEventListener("keydown", (event) => {
     if (game.over) return;
     console.log(event.key);
-    console.log(fire)
     switch (event.key) {
         case "a":
         case "ArrowLeft":
@@ -551,7 +676,7 @@ addEventListener("keydown", (event) => {
         case "ArrowDown":
             keys.down.pressed = true;
             break;
-        case " ":
+        case shoot_key:
             keys.space.pressed = true;
             projectiles.push(new Projectile({
                 position: { x: player.position.x + player.width / 2, y: player.position.y },
@@ -579,8 +704,43 @@ addEventListener("keyup", (event) => {
         case "ArrowDown":
             keys.down.pressed = false;
             break;
-        case " ":
+        case shoot_key:
             keys.space.pressed = false;
             break;
     }
 })
+
+function sendGift(){
+    gifts.push(new gift({position:{x : Math.random() * canvas.width, y : 0},velocity: { x: 0, y: Math.random() * 2 + 1 }}));
+}
+
+function InvaderSpeedUp(){
+    if (curGrid.velocity.x < 0)
+        curGrid.velocity.x -= 2;
+    else
+        curGrid.velocity.x += 2;
+    speedupCounter--
+    if (speedupCounter > 0)
+        setTimeout(InvaderSpeedUp,5000)
+
+}
+
+function createTable(){
+    showLeaderBoard();
+    let data = scores.sort((a, b) => a - b);
+    table.innerHTML = "";
+    for (let i = 0; i < data.length; i++){
+        addToTable(scores[i]);
+    }
+}
+
+function addToTable(playerScore){
+    let row = document.createElement('tr')
+    let cellP = document.createElement('td')
+    let cellS = document.createElement('td')
+    cellP.textContent = currentPlayer
+    row.appendChild(cellP);
+    cellS.textContent = playerScore;
+    row.appendChild(cellS); 
+    table.appendChild(row);
+}
